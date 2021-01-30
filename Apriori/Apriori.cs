@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,35 +13,42 @@ public class Apriori
 
     public int MinimumSupport { get; set; }
 
-    public Apriori(string text, int minimumSupport)
+    public Apriori(string text, double minimumSupport)
     {
-        Console.WriteLine("Apriori");
+        var resultFile = "results.txt";
+        Debug.WriteLine("Apriori");
         FrequencySets = new HashSet<ItemSet>();
-        MinimumSupport = minimumSupport;
         var lines = text.Split(Environment.NewLine, StringSplitOptions.None);
         Transactions = lines.Select(l => new Transaction(l)).ToList();
+        MinimumSupport = (int)Math.Floor(minimumSupport * Transactions.Count);
 
         Debug.WriteLine("0");
         var oneFrequencyItems = Transactions.SelectMany(t => t.Items);
         var continueIteration = FrequencyCount(oneFrequencyItems);
+        Prune();
         Debug.WriteLine("1");
 
         var level = 2;
         while (continueIteration && level < 12)
         {
             continueIteration = FrequencyCount(level);
-            // Not needed since minsup is 1
             Prune();
             Debug.WriteLine(level);
             level++;
-
         }
 
-        foreach (var itemSet in FrequencySets)
+        if (File.Exists(resultFile))
         {
-            Debug.WriteLine(itemSet.ToString());
+            File.Delete(resultFile);
         }
-
+        using (StreamWriter file = new StreamWriter(resultFile))
+        {
+            foreach (var itemSet in FrequencySets.OrderBy(fs => fs.Items.Count).ThenBy(fs => fs.Count).ThenBy(fs => fs.Items.First().Name)) 
+            {
+                Debug.WriteLine(itemSet.ToString());
+                file.WriteLine(itemSet.ToString());
+            }
+        }
     }
 
     private bool FrequencyCount(IEnumerable<Item> items)
@@ -75,7 +83,7 @@ public class Apriori
         {
             lock (debugCounterLock)
             {
-                Console.WriteLine(targetCount + ": " + (++count / (double)candiateItemSets.Count));
+                Debug.WriteLine(targetCount + ": " + (++count / (double)candiateItemSets.Count));
             }
             // Get nearly equal candidate item sets
             foreach (var otherCandidateItemSet in candiateItemSet.OffByOne(candiateItemSets))
@@ -115,7 +123,7 @@ public class Apriori
     {
         if (MinimumSupport > 1)
         {
-            //FrequencySets = FrequencySets.Where(fs => fs.Count > MinimumSupport);
+            FrequencySets.RemoveWhere(fs => fs.Count < MinimumSupport);
         }
     }
 
