@@ -28,6 +28,7 @@ public class Apriori
         while (continueIteration && level < 100)
         {
             continueIteration = FrequencyCount(level);
+            // Not needed since minsup is 1
             Prune();
             Debug.WriteLine(level);
             level++;
@@ -93,7 +94,10 @@ public class Apriori
 
     private void Prune()
     {
-        FrequencySets = FrequencySets.Where(fs => fs.Count > MinimumSupport).ToList();
+        if (MinimumSupport > 1)
+        {
+            FrequencySets = FrequencySets.Where(fs => fs.Count > MinimumSupport).ToList();
+        }
     }
 
 }
