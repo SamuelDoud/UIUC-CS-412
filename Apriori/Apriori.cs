@@ -19,24 +19,24 @@ public class Apriori
         var lines = text.Split(Environment.NewLine, StringSplitOptions.None);
         Transactions = lines.Select(l => new Transaction(l)).ToList();
 
-        Console.WriteLine("0");
+        Debug.WriteLine("0");
         var oneFrequencyItems = Transactions.SelectMany(t => t.Items);
         var continueIteration = FrequencyCount(oneFrequencyItems);
-        Console.WriteLine("1");
+        Debug.WriteLine("1");
         
         var level = 2;
         while (continueIteration && level < 100)
         {
             continueIteration = FrequencyCount(level);
             Prune();
-            Console.WriteLine(level);
+            Debug.WriteLine(level);
             level++;
             
         }
 
         foreach (var itemSet in FrequencySets)
         {
-            Console.WriteLine(itemSet.ToString());
+            Debug.WriteLine(itemSet.ToString());
         }
 
     }
