@@ -27,3 +27,6 @@ obj/Debug/net5.0/Apriori.GeneratedMSBuildEditorConfig.editorconfig
 obj/Debug/net5.0/Apriori.genruntimeconfig.cache
 obj/Debug/net5.0/Apriori.pdb
 obj/Debug/net5.0/ref/Apriori.dll
+/.vs/CS-412/v15
+/Apriori/obj/Debug/net5.0
+/Apriori/obj
