@@ -1,0 +1,50 @@
+798:Sushi Bars
+818:Sports Bars
+823:General Dentistry
+848:Japanese
+870:Pet Services
+874:Pubs
+875:Financial Services
+1002:Cafes
+1018:Ice Cream & Frozen Yogurt
+1025:Professional Services
+1115:Bakeries
+1138:Women's Clothing
+1150:Specialty Food
+1195:Dentists
+1369:Breakfast & Brunch
+1424:Grocery
+1424:Real Estate
+1431:Hotels
+1442:Fitness & Instruction
+1497:Pets
+1586:Home & Garden
+1593:American (New)
+1629:Chinese
+1667:Nail Salons
+1694:Doctors
+1716:Auto Repair
+1774:Burgers
+1848:Italian
+2091:Hair Salons
+2199:Coffee & Tea
+2271:Arts & Entertainment
+2364:Sandwiches
+2416:American (Traditional)
+2495:Hotels & Travel
+2515:Mexican
+2657:Pizza
+2851:Fast Food
+2975:Event Planning & Services
+3078:Fashion
+3103:Active Life
+3468:Local Services
+4208:Automotive
+4328:Bars
+4785:Home Services
+5088:Nightlife
+5121:Health & Medical
+6583:Beauty & Spas
+9250:Food
+11233:Shopping
+25071:Restaurants
