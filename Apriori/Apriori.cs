@@ -78,17 +78,17 @@ public class Apriori
         var key = "lock frquency set";
         var debugCounterLock = "Counter lock";
         var count = 0;
-        Parallel.ForEach(candiateItemSets, candiateItemSet =>
-        //foreach (var candiateItemSet in candiateItemSets)
+        //Parallel.ForEach(candiateItemSets, candiateItemSet =>
+        foreach (var candidateItemSet in candiateItemSets)
         {
             lock (debugCounterLock)
             {
                 Debug.WriteLine(targetCount + ": " + (++count / (double)candiateItemSets.Count));
             }
             // Get nearly equal candidate item sets
-            foreach (var otherCandidateItemSet in candiateItemSet.OffByOne(candiateItemSets))
+            foreach (var otherCandidateItemSet in candidateItemSet.OffByOne(candiateItemSets))
             {
-                var items = new List<Item>(candiateItemSet.Items.ToList());
+                var items = new List<Item>(candidateItemSet.Items.ToList());
                 items.AddRange(otherCandidateItemSet.Items.ToList());
                 var itemsWithNoDuplicates = new HashSet<Item>(items);
                 var newItemSet = new ItemSet(itemsWithNoDuplicates.ToList());
@@ -103,7 +103,7 @@ public class Apriori
                     }
                 }
             }
-        });
+        }//);
         return any;
     }
 
