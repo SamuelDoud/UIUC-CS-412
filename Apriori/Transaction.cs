@@ -3,19 +3,14 @@ using System.Linq;
 
 public class Transaction
 {
-    public IEnumerable<Item> Items {get; private set;}
+    public HashSet<Item> Items {get; private set;}
     public Transaction(string line, string separator=";")
     {
-        Items = line.Split(separator).Select(i => new Item(i));
+        Items = new HashSet<Item>(line.Split(separator).Select(i => new Item(i)).OrderBy(i => i.Name).ToList());
     }
 
-    public bool Contains(List<Item> items)
+    public bool Contains(ItemSet itemSet)
     {
-        return items.All(i => Contains(i));
-    }
-
-    public bool Contains(Item item)
-    {
-        return Items.Contains(item);
+        return itemSet.Items.IsSubsetOf(Items);
     }
 }

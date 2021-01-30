@@ -41,9 +41,9 @@ public class Item : IEquatable<Item>
     public static bool operator == (Item item1, Item item2)
     {
         if (((object)item1) == null || ((object)item2) == null)
-            return Object.Equals(item1, item2);
+            return Equals(item1, item2);
 
-        return item1.Equals(item1);
+        return item1.Equals(item2);
     }
 
     public static bool operator != (Item item1, Item item2)
