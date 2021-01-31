@@ -7,9 +7,9 @@ public class ItemSet : IEquatable<ItemSet>
     public int Count {get; set;} = 1;
     public HashSet<Item> Items {get; private set; }
 
-    public ItemSet(List<Item> items)
+    public ItemSet(HashSet<Item> items)
     {
-        Items = new HashSet<Item>(items.OrderBy(i => i.Name));
+        Items = items;
     }
 
     public ItemSet(Item item)
@@ -60,11 +60,6 @@ public class ItemSet : IEquatable<ItemSet>
         return Count.ToString() + ":" + string.Join(';', Items.Select(i => i.ToString()));
     }
 
-    public bool Equals(ItemSet other)
-    {
-        return Enumerable.SequenceEqual(this.Items, other.Items);
-    }
-
     public static bool operator ==(ItemSet item1, ItemSet item2)
     {
         if (((object)item1) == null || ((object)item2) == null)
@@ -81,6 +76,11 @@ public class ItemSet : IEquatable<ItemSet>
     public override bool Equals(object obj)
     {
         return Equals(obj as ItemSet);
+    }
+
+    public bool Equals(ItemSet other)
+    {
+        return this.GetHashCode() == other.GetHashCode();
     }
 
     public override int GetHashCode()

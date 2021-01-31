@@ -43,7 +43,7 @@ public class Apriori
         }
         using (StreamWriter file = new StreamWriter(resultFile))
         {
-            foreach (var itemSet in FrequencySets.OrderBy(fs => fs.Items.Count).ThenBy(fs => fs.Count).ThenBy(fs => fs.Items.First().Name)) 
+            foreach (var itemSet in FrequencySets.OrderBy(fs => fs.Items.Count).ThenBy(fs => fs.Count).ThenBy(fs => fs.Items.First().Name))
             {
                 Debug.WriteLine(itemSet.ToString());
                 file.WriteLine(itemSet.ToString());
@@ -72,38 +72,38 @@ public class Apriori
     /// <returns></returns>
     private bool FrequencyCount(int targetCount)
     {
+        var removedFromConsiderationLock = new Object();
         var any = false;
-        var candiateItemSets = FrequencySets.Where(iSet => iSet.Items.Count == targetCount - 1).ToList();
-        // combine targetCount - 1 set and a 1-freq set and check if that exists in the transactions
-        var key = "lock frquency set";
-        var debugCounterLock = "Counter lock";
-        var count = 0;
-        //Parallel.ForEach(candiateItemSets, candiateItemSet =>
-        foreach (var candidateItemSet in candiateItemSets)
+
+        var removedFromConsideration = new HashSet<ItemSet>();
+        var candidateItemSets = FrequencySets.Where(iSet => iSet.Items.Count == targetCount - 1).ToList();
+        Parallel.ForEach(candidateItemSets, candidateItemSet =>
         {
-            lock (debugCounterLock)
-            {
-                Debug.WriteLine(targetCount + ": " + (++count / (double)candiateItemSets.Count));
-            }
             // Get nearly equal candidate item sets
-            foreach (var otherCandidateItemSet in candidateItemSet.OffByOne(candiateItemSets))
+            foreach (var otherCandidateItemSet in candidateItemSet.OffByOne(candidateItemSets))
             {
+
                 var items = new List<Item>(candidateItemSet.Items.ToList());
                 items.AddRange(otherCandidateItemSet.Items.ToList());
                 var itemsWithNoDuplicates = new HashSet<Item>(items);
-                var newItemSet = new ItemSet(itemsWithNoDuplicates.ToList());
+                var newItemSet = new ItemSet(itemsWithNoDuplicates);
+                lock (removedFromConsiderationLock)
+                {
+                    if (removedFromConsideration.Any(iS => iS == newItemSet))
+                    {
+                        continue;
+                    }
+                    removedFromConsideration.Add(newItemSet);
+                }
                 foreach (var transaction in Transactions.Where(t => t.Items.Count() >= targetCount && t.Contains(newItemSet)))
                 {
-                    lock (key)
+                    if (CheckIfFrequencySetContains(newItemSet))
                     {
-                        if (CheckIfFrequencySetContains(newItemSet))
-                        {
-                            any = true;
-                        }
+                        any = true;
                     }
                 }
             }
-        }//);
+        });
         return any;
     }
 
