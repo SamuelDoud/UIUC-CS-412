@@ -57,7 +57,7 @@ public class ItemSet : IEquatable<ItemSet>
 
     public override string ToString()
     {
-        return Count.ToString() + ":" + string.Join(';', Items.Select(i => i.ToString()));
+        return Count.ToString() + ":" + string.Join(';', Items.OrderBy(i => i.Name).Select(i => i.ToString()));
     }
 
     public static bool operator ==(ItemSet item1, ItemSet item2)

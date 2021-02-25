@@ -73,16 +73,19 @@ public class Apriori
     private bool FrequencyCount(int targetCount)
     {
         var removedFromConsiderationLock = new Object();
-        var any = false;
+        var frequencySetsCheckLock = new Object();
+        var any = true;
 
         var removedFromConsideration = new HashSet<ItemSet>();
         var candidateItemSets = FrequencySets.Where(iSet => iSet.Items.Count == targetCount - 1).ToList();
-        Parallel.ForEach(candidateItemSets, candidateItemSet =>
+        for (int i = 0; i < candidateItemSets.Count; i++)
         {
+            var candidateItemSet = candidateItemSets[i];
+            var otherCandidateItemSets = candidateItemSets.Skip(i + 1);
             // Get nearly equal candidate item sets
-            foreach (var otherCandidateItemSet in candidateItemSet.OffByOne(candidateItemSets))
+            Parallel.ForEach(candidateItemSet.OffByOne(otherCandidateItemSets), otherCandidateItemSet =>
             {
-
+                var alreadySeen = false;
                 var items = new List<Item>(candidateItemSet.Items.ToList());
                 items.AddRange(otherCandidateItemSet.Items.ToList());
                 var itemsWithNoDuplicates = new HashSet<Item>(items);
@@ -91,19 +94,22 @@ public class Apriori
                 {
                     if (removedFromConsideration.Any(iS => iS == newItemSet))
                     {
-                        continue;
+                        alreadySeen = true;
                     }
                     removedFromConsideration.Add(newItemSet);
                 }
-                foreach (var transaction in Transactions.Where(t => t.Items.Count() >= targetCount && t.Contains(newItemSet)))
+                foreach (var transaction in Transactions.Where(t => !alreadySeen && t.Items.Count() >= targetCount && t.Contains(newItemSet)))
                 {
-                    if (CheckIfFrequencySetContains(newItemSet))
-                    {
-                        any = true;
+                    lock(frequencySetsCheckLock)
+                    { 
+                        if (CheckIfFrequencySetContains(newItemSet))
+                        {
+                            any = true;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         return any;
     }
 
@@ -121,9 +127,9 @@ public class Apriori
 
     private void Prune()
     {
-        if (MinimumSupport > 1)
+        if (MinimumSupport >= 1)
         {
-            FrequencySets.RemoveWhere(fs => fs.Count < MinimumSupport);
+            FrequencySets.RemoveWhere(fs => fs.Count <= MinimumSupport);
         }
     }
 
