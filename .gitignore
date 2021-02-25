@@ -30,3 +30,8 @@ obj/Debug/net5.0/ref/Apriori.dll
 /.vs/CS-412/v15
 /Apriori/obj/Debug/net5.0
 /Apriori/obj
+/SequentialPatternMining/bin
+/SequentialPatternMining/obj
+/SequentialPatternMiningTests
+*.user
+/Apriori/bin/Release/net5.0
