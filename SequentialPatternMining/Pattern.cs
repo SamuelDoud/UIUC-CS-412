@@ -23,17 +23,12 @@ namespace SequentialPatternMining
             Support = 1;
         }
 
-        public bool MergeIfEqual(Pattern other, bool addSupport=true)
-        {
-            var match = other == this;
-            if (match && addSupport)
-            {
-                this.Support += other.Support;
-            }
-            return match;
-        }
-
-        public static List<Pattern> OffByOne(List<Pattern> patterns)
+        /// <summary>
+        /// Computes the patterns of length N + 1 that could exist based on the input of length N patterns.
+        /// </summary>
+        /// <param name="patterns">The length N patterns</param>
+        /// <returns>The possible length N + 1 patterns</returns>
+        public static List<Pattern> CandidatePatterns(List<Pattern> patterns)
         {
             HashSet<Pattern> patternsHashSet = new HashSet<Pattern>();
             var skip = 0;
@@ -64,15 +59,23 @@ namespace SequentialPatternMining
             return patternsHashSet.ToList();
         }
 
-        private static Pattern Merge(Pattern topPattern, Pattern pattern)
+
+        /// <summary>
+        /// Computes the one combination of almost possible patterns given two almost equal patterns.
+        /// A B C / A B D -> A B D C/ A B C D (need to run this twice with reversed params to work)
+        /// </summary>
+        /// <param name="topPattern">One, almost equal, pattern.</param>
+        /// <param name="lowerPattern">The other, almost equal, pattern.</param>
+        /// <returns>A merged pattern.</returns>
+        private static Pattern Merge(Pattern topPattern, Pattern lowerPattern)
         {
             List<string> strings = new List<string>();
             for (int i = 0; i < topPattern.Patterns.Count; i++)
             {
                 strings.Add(topPattern.Patterns[i]);
-                if (pattern.Patterns[i] != topPattern.Patterns[i])
+                if (lowerPattern.Patterns[i] != topPattern.Patterns[i])
                 {
-                    strings.Add(pattern.Patterns[i]);
+                    strings.Add(lowerPattern.Patterns[i]);
                 }
             }
             return new Pattern(strings.ToArray());
@@ -109,28 +112,6 @@ namespace SequentialPatternMining
                 hashCode ^= pattern.GetHashCode();
             }
             return hashCode;
-        }
-
-        public bool IsSequentialSubsetOf(Pattern possibleSuperset, bool isProper = false)
-        {
-            if (possibleSuperset.Length < this.Length)
-            if (!(isProper && possibleSuperset.Length == this.Length))
-            {
-                return false;
-            }
-            for (int i = 0; i < this.Length; i++)
-            {
-                if (this.Patterns[i] != possibleSuperset.Patterns[i])
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public bool IsSequentialSupersetOf(Pattern possibleSubset, bool isProper = false)
-        {
-            return possibleSubset.IsSequentialSubsetOf(this, isProper);
         }
 
         public override string ToString()

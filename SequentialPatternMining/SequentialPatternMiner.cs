@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Diagnostics;
 using System.IO;
 
 namespace SequentialPatternMining
@@ -37,96 +35,59 @@ namespace SequentialPatternMining
             }
         }
 
-        private void CullLines(List<Pattern> patterns, int length)
-        {
-            var patternsLookup = new HashSet<string>(patterns.SelectMany(p => p.Patterns));
-            var count = Lines.SelectMany(l => l.Words).Count();
-            if (length == 1)
-            {
-                Parallel.ForEach(Lines, line =>
-                {
-                    var tempWords = new List<string>();
-                    foreach (var word in line.Words)
-                    {
-                        if (patternsLookup.Contains(word))
-                        {
-                            tempWords.Add(word);
-                        }
-                    }
-                    line.Words = tempWords.ToArray();
-                });
-            }
-            var countDiff = count - Lines.SelectMany(l => l.Words).Count();
-            // to do other lengths
-        }
-
-        private Dictionary<string, Pattern> CullPatterns(Dictionary<string, Pattern> passedPatternsDict, int length)
-        {
-            var cullPatterns = PatternsOfLength[length - 1];
-            var patternsDict = new Dictionary<string, Pattern>();
-            foreach (var kvp in passedPatternsDict)
-            {
-                if (cullPatterns.Any(cp => cp.IsSequentialSubsetOf(kvp.Value)))
-                {
-                    patternsDict[kvp.Key] = passedPatternsDict[kvp.Key];
-                }
-            }
-            return patternsDict;
-        }
-
+        /// <summary>
+        /// Creates patterns of length N. Calls the Pruner internally and stores to the class Pattern Dictionary.
+        /// This method runs in parallel for length > 1.
+        /// </summary>
+        /// <param name="length">The length of patterns being created.</param>
         private void GeneratePatternsOfLength(int length)
         {
+            var candidatePatterns = new List<Pattern>();
             if (length == 1)
             {
-                var allPatterns = new List<Pattern>();
-                Console.Write(string.Format("{0} at length {1} ", "Generate patterns parallel section", length));
-                var stopWatch = Stopwatch.StartNew();
-                Parallel.For(0, Lines.Count, i =>
-                {
-                    var tempPatterns = Lines[i].GetAllPatternsLength1();
-                    lock ("a")
-                    {
-                        allPatterns.AddRange(tempPatterns);
-                    }
-                });
-                Console.WriteLine(string.Format("took {0}ms.", stopWatch.ElapsedMilliseconds));
-                var mergedPatterns = MergePatterns(allPatterns);
-                var prunedPatterns = Prune(mergedPatterns);
-                PatternsOfLength[length - 1] = prunedPatterns;
+                candidatePatterns = MergePatterns(Lines.SelectMany(l => l.GetAllPatternsLength1()));
             }
             else
             {
-                PatternsOfLength[length - 1] = new List<Pattern>();
-                var candidatePatterns = Pattern.OffByOne(PatternsOfLength[length - 2]);
+                candidatePatterns = Pattern.CandidatePatterns(PatternsOfLength[length - 2]);
                 Parallel.ForEach(candidatePatterns, candidatePattern =>
                 {
+                    // counts the number of lines that contain this contiguous sequential pattern and adds that to the support.
                     candidatePattern.Support = Lines.Where(l => l.ContainsPattern(candidatePattern)).Count();
                 });
-                PatternsOfLength[length - 1] = candidatePatterns.Where(cp => cp.Support >= MinimumSupport).ToList();
-
             }
+            PatternsOfLength[length - 1] = Prune(candidatePatterns);
         }
 
 
-
+        /// <summary>
+        /// Removes patterns that do not meet the minimum support.
+        /// </summary>
+        /// <param name="patterns">The patterns we are culling.</param>
+        /// <returns>The patterns that were not culled</returns>
         private List<Pattern> Prune(List<Pattern> patterns)
         {
             return patterns.Where(p => p.Support >= MinimumSupport).ToList();
         }
 
-        private static List<Pattern> MergePatterns(List<Pattern> patterns)
+        /// <summary>
+        /// Compresses a list of patterns to a list of unique patterns with a support value reflecting the occurance.
+        /// </summary>
+        /// <param name="patterns">The uncompressed patterns</param>
+        /// <returns>The compressed patterns</returns>
+        private static List<Pattern> MergePatterns(IEnumerable<Pattern> patterns)
         {
-            var dictionary = patterns.Where(p => p != null).GroupBy(p => string.Join(',', p.Patterns)).ToDictionary(kvp => kvp.Key, kvp => kvp);
-            patterns = new List<Pattern>();
-            foreach (var kvp in dictionary)
+            var PatternNamePatternListDict = patterns.Where(p => p != null).GroupBy(p => string.Join(',', p.Patterns)).ToDictionary(kvp => kvp.Key, kvp => kvp);
+            var patternsList = new List<Pattern>();
+            foreach (var kvp in PatternNamePatternListDict)
             {
-                patterns.Add(new Pattern(kvp.Key)
+                patternsList.Add(new Pattern(kvp.Key)
                 {
                     Support = kvp.Value.Sum(pat => pat.Support)
                 });
             }
 
-            return patterns;
+            return patternsList;
         }
 
         public override string ToString()
