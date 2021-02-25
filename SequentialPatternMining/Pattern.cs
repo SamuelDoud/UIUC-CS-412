@@ -96,9 +96,19 @@ namespace SequentialPatternMining
             return this.Patterns.SequenceEqual(other.Patterns);
         }
 
+        public override bool Equals(object obj)
+        {
+            return this == obj as Pattern;
+        }
+
         public override int GetHashCode()
         {
-            return Patterns.GetHashCode();
+            var hashCode = 0;
+            foreach (var pattern in Patterns)
+            {
+                hashCode ^= pattern.GetHashCode();
+            }
+            return hashCode;
         }
 
         public bool IsSequentialSubsetOf(Pattern possibleSuperset, bool isProper = false)

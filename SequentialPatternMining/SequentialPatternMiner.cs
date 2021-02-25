@@ -83,7 +83,7 @@ namespace SequentialPatternMining
                 var stopWatch = Stopwatch.StartNew();
                 Parallel.For(0, Lines.Count, i =>
                 {
-                    var tempPatterns = Lines[i].GetAllPatterns(length);
+                    var tempPatterns = Lines[i].GetAllPatternsLength1();
                     lock ("a")
                     {
                         allPatterns.AddRange(tempPatterns);
@@ -92,14 +92,12 @@ namespace SequentialPatternMining
                 Console.WriteLine(string.Format("took {0}ms.", stopWatch.ElapsedMilliseconds));
                 var mergedPatterns = MergePatterns(allPatterns);
                 var prunedPatterns = Prune(mergedPatterns);
-                CullLines(prunedPatterns, length);
                 PatternsOfLength[length - 1] = prunedPatterns;
             }
             else
             {
                 PatternsOfLength[length - 1] = new List<Pattern>();
                 var candidatePatterns = Pattern.OffByOne(PatternsOfLength[length - 2]);
-                var a = 1;
                 Parallel.ForEach(candidatePatterns, candidatePattern =>
                 {
                     candidatePattern.Support = Lines.Where(l => l.ContainsPattern(candidatePattern)).Count();

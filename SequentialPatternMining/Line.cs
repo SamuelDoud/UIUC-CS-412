@@ -94,38 +94,9 @@ namespace SequentialPatternMining
 
         }
 
-        public List<Pattern> GetAllPatterns(int length, List<Pattern> hintPatterns=null)
+        public List<Pattern> GetAllPatternsLength1()
         {
-            var allPatterns = GetAllPatternsAsText(length, hintPatterns:hintPatterns).Select(text => new Pattern(text)).ToList();
-            int index = 0;
-            while (index < allPatterns.Count)
-            {
-                //var stopWatch = Stopwatch.StartNew();
-                var removeIndexes = new List<int>();
-                for (int i = index + 1; i < allPatterns.Count; i++)
-                {
-                    if (allPatterns[index].MergeIfEqual(allPatterns[i], false))
-                    {
-                        removeIndexes.Add(i);
-                    }
-                }
-
-                //Console.WriteLine(string.Format("took {0}ms.", stopWatch.ElapsedMilliseconds));
-                //stopWatch.Restart();
-                // Remove the patterns that were found to already exist.
-                for (int i = allPatterns.Count - 1; i >= 0; i--)
-                {
-                    if (removeIndexes.Contains(i))
-                    {
-                        allPatterns.RemoveAt(i);
-                    }
-                }
-                //Console.WriteLine(string.Format("took {0}ms.", stopWatch.ElapsedMilliseconds));
-
-                index++;
-            }
-
-            return allPatterns;
+            return new HashSet<Pattern>(this.Words.Select(w => new Pattern(w))).ToList();
         }
     }
 }
