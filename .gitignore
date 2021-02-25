@@ -35,3 +35,6 @@ obj/Debug/net5.0/ref/Apriori.dll
 /SequentialPatternMiningTests
 *.user
 /Apriori/bin/Release/net5.0
+*.v2
+*.manifest
+*.testlog
